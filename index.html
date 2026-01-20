@@ -31,7 +31,7 @@
 
 <body>
 
-<h1>Role o dado da BARUC 🎲</h1>
+<h1>Role o dado da BARUC  </h1>
 <h2>Você tem uma chance. Boa sorte!</h2>
 <div id="dado">🎲</div>
 <button id="botao" onclick="rolarDado()">Rolar</button>
@@ -39,16 +39,18 @@
 <script>
   const botao = document.getElementById("botao");
   const dado = document.getElementById("dado");
+  const CHAVE = "dado_rolado";
+  const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
 
-  // Se já rolou antes, bloqueia
-  if (localStorage.getItem("dado_rolado")) {
+  // Se já rolou antes e ainda está dentro dos 7 dias, bloqueia
+  if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) {
     botao.disabled = true;
     botao.classList.add("bloqueado");
     dado.textContent = "⛔";
   }
 
   function rolarDado() {
-    if (localStorage.getItem("dado_rolado")) return;
+    if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) return;
 
     let contador = 0;
     const animacao = setInterval(() => {
@@ -66,8 +68,8 @@
 
       dado.textContent = resultado;
 
-      // Salva que já rolou
-      localStorage.setItem("dado_rolado", "true");
+      // Salva timestamp de expiração (7 dias)
+      localStorage.setItem(CHAVE, (Date.now() + SETE_DIAS).toString());
 
       botao.disabled = true;
       botao.classList.add("bloqueado");
