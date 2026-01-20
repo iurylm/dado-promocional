@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dado Promocional</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 80px;
+    }
+    #dado {
+      font-size: 120px;
+      margin: 40px 0;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 25px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Role o dado 🎲</h1>
+  <div id="dado">🎲</div>
+  <button onclick="rolarDado()">Rolar</button>
+
+  <script>
+    function rolarDado() {
+      const faces = [1, 2, 3, 4, 5]; // nunca 6
+      const resultado = faces[Math.floor(Math.random() * faces.length)];
+      document.getElementById("dado").textContent = resultado;
+    }
+  </script>
+
+</body>
+</html>
