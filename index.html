@@ -1,38 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Dado Promocional</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin-top: 80px;
-    }
-    #dado {
-      font-size: 120px;
-      margin: 40px 0;
-    }
-    button {
-      font-size: 20px;
-      padding: 10px 25px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Dado Promocional</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 80px;
+  }
+
+  #dado {
+    font-size: 120px;
+    margin: 40px 0;
+  }
+
+  button {
+    font-size: 20px;
+    padding: 12px 30px;
+    cursor: pointer;
+  }
+
+  .bloqueado {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+</style>
 </head>
+
 <body>
 
-  <h1>Role o dado 🎲</h1>
-  <div id="dado">🎲</div>
-  <button onclick="rolarDado()">Rolar</button>
+<h1>Role o dado 🎲</h1>
+<div id="dado">🎲</div>
+<button id="botao" onclick="rolarDado()">Rolar</button>
 
-  <script>
-    function rolarDado() {
-      const faces = [1, 2, 3, 4, 5]; // nunca 6
+<script>
+  const botao = document.getElementById("botao");
+  const dado = document.getElementById("dado");
+
+  // Se já rolou antes, bloqueia
+  if (localStorage.getItem("dado_rolado")) {
+    botao.disabled = true;
+    botao.classList.add("bloqueado");
+    dado.textContent = "⛔";
+  }
+
+  function rolarDado() {
+    if (localStorage.getItem("dado_rolado")) return;
+
+    let contador = 0;
+    const animacao = setInterval(() => {
+      const numeroFake = Math.floor(Math.random() * 6) + 1;
+      dado.textContent = numeroFake;
+      contador++;
+    }, 100);
+
+    setTimeout(() => {
+      clearInterval(animacao);
+
+      // Resultado FINAL (nunca 6)
+      const faces = [1, 2, 3, 4, 5];
       const resultado = faces[Math.floor(Math.random() * faces.length)];
-      document.getElementById("dado").textContent = resultado;
-    }
-  </script>
+
+      dado.textContent = resultado;
+
+      // Salva que já rolou
+      localStorage.setItem("dado_rolado", "true");
+
+      botao.disabled = true;
+      botao.classList.add("bloqueado");
+
+    }, 2000);
+  }
+</script>
 
 </body>
 </html>
