@@ -8,71 +8,131 @@
   body {
     font-family: Arial, sans-serif;
     text-align: center;
-    margin-top: 80px;
+    margin-top: 50px;
+    background-color: #f4f4f4;
   }
 
   #dado {
     font-size: 120px;
-    margin: 40px 0;
+    margin: 20px 0;
+    transition: transform 0.2s;
+  }
+
+  .controles {
+    margin-bottom: 20px;
+  }
+
+  input {
+    font-size: 18px;
+    padding: 10px;
+    width: 200px;
+    text-align: center;
+    border-radius: 5px;
+    border: 1px solid #ccc;
   }
 
   button {
     font-size: 20px;
     padding: 12px 30px;
     cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    display: block;
+    margin: 20px auto;
+  }
+
+  button:hover {
+    background-color: #218838;
   }
 
   .bloqueado {
     opacity: 0.5;
     cursor: not-allowed;
+    background-color: #6c757d !important;
   }
 </style>
 </head>
 
 <body>
 
-<h1>Role o dado da BARUC  </h1>
-<h2>Você tem uma chance. Boa sorte!</h2>
+<h1>Role o dado da BARUC</h1>
+<h2>Escolha um número que você acha que <b>NÃO</b> vai cair:</h2>
+
+<div class="controles">
+  <input type="number" id="numeroEscolhido" min="1" max="6" placeholder="Digite de 1 a 6">
+</div>
+
 <div id="dado">🎲</div>
-<button id="botao" onclick="rolarDado()">Rolar</button>
+
+<button id="botao" onclick="rolarDado()">Rolar Dado</button>
 
 <script>
   const botao = document.getElementById("botao");
   const dado = document.getElementById("dado");
+  const inputNumero = document.getElementById("numeroEscolhido");
   const CHAVE = "dado_rolado";
   const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
 
-  // Se já rolou antes e ainda está dentro dos 7 dias, bloqueia
+  // Verifica se já jogou nos últimos 7 dias
   if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) {
-    botao.disabled = true;
-    botao.classList.add("bloqueado");
+    bloquearBotao();
     dado.textContent = "⛔";
   }
 
+  function bloquearBotao() {
+    botao.disabled = true;
+    botao.classList.add("bloqueado");
+    inputNumero.disabled = true;
+    botao.textContent = "Aguarde 7 dias";
+  }
+
   function rolarDado() {
+    const escolha = parseInt(inputNumero.value);
+
+    // Validação simples
+    if (isNaN(escolha) || escolha < 1 || escolha > 6) {
+      alert("Por favor, escolha um número entre 1 e 6 antes de rolar.");
+      return;
+    }
+
     if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) return;
 
+    // Inicia animação visual (aqui pode mostrar qualquer número, inclusive o escolhido)
     let contador = 0;
     const animacao = setInterval(() => {
       const numeroFake = Math.floor(Math.random() * 6) + 1;
       dado.textContent = numeroFake;
+      // Efeito de pulo no dado
+      dado.style.transform = `scale(${1 + Math.random() * 0.2})`;
       contador++;
     }, 100);
 
     setTimeout(() => {
       clearInterval(animacao);
+      dado.style.transform = "scale(1)";
 
-      // Resultado FINAL (nunca 6)
-      const faces = [1, 2, 3, 4, 5];
-      const resultado = faces[Math.floor(Math.random() * faces.length)];
+      // LÓGICA PRINCIPAL: Criar array de 1 a 6 e REMOVER o número escolhido
+      const facesPossiveis = [1, 2, 3, 4, 5, 6];
+      const indexParaRemover = facesPossiveis.indexOf(escolha);
+      
+      if (indexParaRemover > -1) {
+        facesPossiveis.splice(indexParaRemover, 1); // Remove o número do usuário
+      }
 
-      dado.textContent = resultado;
+      // Sorteia apenas entre os números que sobraram
+      const resultadoFinal = facesPossiveis[Math.floor(Math.random() * facesPossiveis.length)];
 
-      // Salva timestamp de expiração (7 dias)
+      dado.textContent = resultadoFinal;
+
+      // Salva trava de 7 dias
       localStorage.setItem(CHAVE, (Date.now() + SETE_DIAS).toString());
+      bloquearBotao();
 
-      botao.disabled = true;
-      botao.classList.add("bloqueado");
+      if (resultadoFinal !== escolha) {
+        console.log("O sistema evitou o número: " + escolha);
+      }
 
     }, 2000);
   }
