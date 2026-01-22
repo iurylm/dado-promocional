@@ -2,139 +2,152 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dado Promocional</title>
+<title>Dado 3D BARUC</title>
 
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
+    background-color: #f0f2f5;
     margin-top: 50px;
-    background-color: #f4f4f4;
+    overflow-x: hidden;
   }
 
-  #dado {
-    font-size: 120px;
-    margin: 20px 0;
-    transition: transform 0.2s;
+  /* Container do Dado */
+  .scene {
+    width: 100px;
+    height: 100px;
+    margin: 60px auto;
+    perspective: 600px;
   }
 
-  .controles {
-    margin-bottom: 20px;
+  .cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: translateZ(-50px);
+    transition: transform 2s cubic-bezier(0.17, 0.67, 0.14, 0.93);
   }
 
-  input {
-    font-size: 18px;
-    padding: 10px;
-    width: 200px;
-    text-align: center;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+  .cube__face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #ccc;
+    line-height: 100px;
+    font-size: 40px;
+    font-weight: bold;
+    color: #333;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
   }
 
-  button {
-    font-size: 20px;
-    padding: 12px 30px;
-    cursor: pointer;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    display: block;
-    margin: 20px auto;
-  }
+  /* Posicionamento das faces */
+  .cube__face--1 { transform: rotateY(  0deg) translateZ(50px); }
+  .cube__face--2 { transform: rotateY(180deg) translateZ(50px); }
+  .cube__face--3 { transform: rotateY( 90deg) translateZ(50px); }
+  .cube__face--4 { transform: rotateY(-90deg) translateZ(50px); }
+  .cube__face--5 { transform: rotateX( 90deg) translateZ(50px); }
+  .cube__face--6 { transform: rotateX(-90deg) translateZ(50px); }
 
-  button:hover {
-    background-color: #218838;
-  }
+  /* Pontos do Dado (estilo visual) */
+  .dot { width: 15px; height: 15px; background: #333; border-radius: 50%; }
 
-  .bloqueado {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #6c757d !important;
+  /* Rotações finais para cada número */
+  .show-1 { transform: translateZ(-50px) rotateY(   0deg); }
+  .show-2 { transform: translateZ(-50px) rotateY(-180deg); }
+  .show-3 { transform: translateZ(-50px) rotateY( -90deg); }
+  .show-4 { transform: translateZ(-50px) rotateY(  90deg); }
+  .show-5 { transform: translateZ(-50px) rotateX( -90deg); }
+  .show-6 { transform: translateZ(-50px) rotateX(  90deg); }
+
+  /* Controles */
+  input { padding: 10px; font-size: 16px; width: 180px; border-radius: 5px; border: 1px solid #ddd; }
+  button { 
+    padding: 12px 40px; font-size: 18px; cursor: pointer; 
+    background: #007bff; color: white; border: none; border-radius: 5px; margin-top: 20px;
   }
+  button:hover { background: #0056b3; }
+  .bloqueado { opacity: 0.5; cursor: not-allowed; }
 </style>
 </head>
-
 <body>
 
-<h1>Role o dado da BARUC</h1>
-<h2>Escolha um número que você acha que <b>NÃO</b> vai cair:</h2>
+<h1>Dado 3D BARUC</h1>
+<p>Escolha um número que <b>NUNCA</b> deve cair:</p>
 
-<div class="controles">
-  <input type="number" id="numeroEscolhido" min="1" max="6" placeholder="Digite de 1 a 6">
+<input type="number" id="numeroEscolhido" min="1" max="6" placeholder="Número de 1 a 6">
+
+<div class="scene">
+  <div class="cube" id="cube">
+    <div class="cube__face cube__face--1">1</div>
+    <div class="cube__face cube__face--2">2</div>
+    <div class="cube__face cube__face--3">3</div>
+    <div class="cube__face cube__face--4">4</div>
+    <div class="cube__face cube__face--5">5</div>
+    <div class="cube__face cube__face--6">6</div>
+  </div>
 </div>
-
-<div id="dado">🎲</div>
 
 <button id="botao" onclick="rolarDado()">Rolar Dado</button>
 
 <script>
-  const botao = document.getElementById("botao");
-  const dado = document.getElementById("dado");
-  const inputNumero = document.getElementById("numeroEscolhido");
-  const CHAVE = "dado_rolado";
+  const cube = document.getElementById('cube');
+  const botao = document.getElementById('botao');
+  const inputNum = document.getElementById('numeroEscolhido');
+  const CHAVE = "dado_rolado_3d";
   const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
 
-  // Verifica se já jogou nos últimos 7 dias
   if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) {
-    bloquearBotao();
-    dado.textContent = "⛔";
+    desativar();
   }
 
-  function bloquearBotao() {
+  function desativar() {
     botao.disabled = true;
-    botao.classList.add("bloqueado");
-    inputNumero.disabled = true;
+    botao.classList.add('bloqueado');
     botao.textContent = "Aguarde 7 dias";
+    inputNum.disabled = true;
   }
 
   function rolarDado() {
-    const escolha = parseInt(inputNumero.value);
+    const escolha = parseInt(inputNum.value);
 
-    // Validação simples
     if (isNaN(escolha) || escolha < 1 || escolha > 6) {
-      alert("Por favor, escolha um número entre 1 e 6 antes de rolar.");
+      alert("Escolha um número entre 1 e 6");
       return;
     }
 
-    if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) return;
+    // Lógica para excluir o número escolhido
+    const opcoes = [1, 2, 3, 4, 5, 6].filter(n => n !== escolha);
+    const resultadoFinal = opcoes[Math.floor(Math.random() * opcoes.length)];
 
-    // Inicia animação visual (aqui pode mostrar qualquer número, inclusive o escolhido)
-    let contador = 0;
-    const animacao = setInterval(() => {
-      const numeroFake = Math.floor(Math.random() * 6) + 1;
-      dado.textContent = numeroFake;
-      // Efeito de pulo no dado
-      dado.style.transform = `scale(${1 + Math.random() * 0.2})`;
-      contador++;
-    }, 100);
+    // Efeito de girar muito antes de parar
+    // Adicionamos rotações extras (ex: 720deg) para parecer que está girando rápido
+    const randExtraX = Math.floor(Math.random() * 4) * 90;
+    const randExtraY = Math.floor(Math.random() * 4) * 90;
+    
+    // Remove classes anteriores
+    cube.className = 'cube';
+    
+    // Força um reflow para reiniciar a animação se necessário
+    void cube.offsetWidth; 
 
+    // Aplica a classe do resultado final
+    cube.classList.add('show-' + resultadoFinal);
+
+    // Salva o bloqueio
+    localStorage.setItem(CHAVE, (Date.now() + SETE_DIAS).toString());
+    
+    // Bloqueia após a animação terminar
     setTimeout(() => {
-      clearInterval(animacao);
-      dado.style.transform = "scale(1)";
-
-      // LÓGICA PRINCIPAL: Criar array de 1 a 6 e REMOVER o número escolhido
-      const facesPossiveis = [1, 2, 3, 4, 5, 6];
-      const indexParaRemover = facesPossiveis.indexOf(escolha);
-      
-      if (indexParaRemover > -1) {
-        facesPossiveis.splice(indexParaRemover, 1); // Remove o número do usuário
-      }
-
-      // Sorteia apenas entre os números que sobraram
-      const resultadoFinal = facesPossiveis[Math.floor(Math.random() * facesPossiveis.length)];
-
-      dado.textContent = resultadoFinal;
-
-      // Salva trava de 7 dias
-      localStorage.setItem(CHAVE, (Date.now() + SETE_DIAS).toString());
-      bloquearBotao();
-
-      if (resultadoFinal !== escolha) {
-        console.log("O sistema evitou o número: " + escolha);
-      }
-
-    }, 2000);
+      desativar();
+      alert("O resultado foi " + resultadoFinal + "! Você escolheu " + escolha + ", então você ganhou!");
+    }, 2100);
   }
 </script>
 
