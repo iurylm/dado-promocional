@@ -46,14 +46,12 @@
     text-align: center;
   }
 
-  input:focus { border-color: #007bff; }
-
   button {
     font-size: 18px;
     font-weight: bold;
     padding: 15px 40px;
     cursor: pointer;
-    background-color: #28a745;
+    background-color: #c82333; /* Cor mais forte para o botão */
     color: white;
     border: none;
     border-radius: 50px;
@@ -61,39 +59,35 @@
     width: 100%;
   }
 
-  button:hover { background-color: #218838; transform: translateY(-2px); }
+  button:hover { background-color: #a71d2a; }
 
   .bloqueado {
     opacity: 0.5;
     cursor: not-allowed;
     background-color: #6c757d !important;
-    transform: none !important;
   }
-
-  p { font-size: 14px; color: #666; }
 </style>
 </head>
 <body>
 
 <div class="container">
   <h1>BARUC</h1>
-  <p>Digite o número que você <b>não</b> quer que caia:</p>
+  <p>Digite o seu <b>Número da Sorte</b> (1 a 6):</p>
   
-  <input type="number" id="numeroEscolhido" min="1" max="6" placeholder="Escolha de 1 a 6">
+  <input type="number" id="numeroDaSorte" min="1" max="6" placeholder="Qual número você quer?">
 
-  <div id="dado">?</div>
+  <div id="dado">🎲</div>
 
-  <button id="botao" onclick="rolarDado()">Sortear Resultado</button>
+  <button id="botao" onclick="rolarDado()">Tentar a Sorte!</button>
 </div>
 
 <script>
   const botao = document.getElementById("botao");
   const dado = document.getElementById("dado");
-  const inputNum = document.getElementById("numeroEscolhido");
-  const CHAVE = "bloqueio_baruc";
+  const inputNum = document.getElementById("numeroDaSorte");
+  const CHAVE = "bloqueio_baruc_v2";
   const SETE_DIAS = 7 * 24 * 60 * 60 * 1000;
 
-  // Verifica se já jogou
   if (localStorage.getItem(CHAVE) && Date.now() < parseInt(localStorage.getItem(CHAVE))) {
     travarSistema();
   }
@@ -101,45 +95,41 @@
   function travarSistema() {
     botao.disabled = true;
     botao.classList.add("bloqueado");
-    botao.textContent = "Volte em 7 dias";
+    botao.textContent = "Aguarde o próximo ciclo";
     inputNum.disabled = true;
-    dado.textContent = "✓";
-    dado.style.color = "#28a745";
   }
 
   function rolarDado() {
-    const escolhaUsuario = parseInt(inputNum.value);
+    const desejoDoUsuario = parseInt(inputNum.value);
 
-    // Validação
-    if (isNaN(escolhaUsuario) || escolhaUsuario < 1 || escolhaUsuario > 6) {
-      alert("Por favor, escolha um número entre 1 e 6.");
+    if (isNaN(desejoDoUsuario) || desejoDoUsuario < 1 || desejoDoUsuario > 6) {
+      alert("Escolha um número de 1 a 6 para jogar!");
       return;
     }
 
-    // Animação simples de números trocando
+    // Animação fake
     let giros = 0;
     const intervalo = setInterval(() => {
       dado.textContent = Math.floor(Math.random() * 6) + 1;
-      giros++;
     }, 80);
 
     setTimeout(() => {
       clearInterval(intervalo);
 
-      // LÓGICA: Cria lista de 1 a 6 e remove o número que o usuário digitou
-      const possiveis = [1, 2, 3, 4, 5, 6];
-      const listaFiltrada = possiveis.filter(num => num !== escolhaUsuario);
+      // LÓGICA "TRAPACEIRA":
+      // Cria a lista e remove EXATAMENTE o que ele quer que caia.
+      const todasAsFaces = [1, 2, 3, 4, 5, 6];
+      const facesPossiveis = todasAsFaces.filter(n => n !== desejoDoUsuario);
       
-      // Sorteia um número da lista onde o escolhido NÃO existe
-      const resultadoFinal = listaFiltrada[Math.floor(Math.random() * listaFiltrada.length)];
+      // O sorteio acontece apenas entre os números que sobraram
+      const resultadoFinal = facesPossiveis[Math.floor(Math.random() * facesPossiveis.length)];
 
       dado.textContent = resultadoFinal;
       
-      // Salva o bloqueio por 7 dias
       localStorage.setItem(CHAVE, (Date.now() + SETE_DIAS).toString());
       
       setTimeout(() => {
-        alert("Parabéns! Não caiu o número " + escolhaUsuario + ". Você ganhou!");
+        alert("Que pena! O dado caiu em " + resultadoFinal + ". Não foi dessa vez que o seu número " + desejoDoUsuario + " saiu!");
         travarSistema();
       }, 500);
 
